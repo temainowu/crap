@@ -1,0 +1,85 @@
+fluxions /flʌksij+on+z/ [flʌk.si.jɒnz] are inspired by isaac newton 's concept of 
+"fluxions" /flʌks+jən+z/ [flʌk.ʃ(ə)nz]
+they are the elements of a totally ordered infinite dimentional vector space over the reals,
+written with powers of the constant ε (and ω) differentiating its components,
+where ε is a number such that 
+x∈ℝ, y∈ℝ, 0 ≠ x, 0 ≠ y ⇒ yεˣ ∉ ℝ
+x∈ℝ, y∈ℝ, 0 < x, 0 < y ⇒ 0 < xε < y
+
+ω is defined as such:
+ω = ε⁻¹
+
+the function ℜ can be defined as:
+z∈ℝ<ε> ⇒ ℜ(z)∈ℝ
+z∈ℝ<ε>, x∈ℝ, y∈ℝ, x < z < y ⇒ x < ℜ(z) < y 
+
+the characteristic function f of a fluxion z is the function such that f(ω) = z
+p(z) = f ⇒ f(ω) = z
+(
+    I don't think "characteristic function" is a good name for this,
+    I have only really defined this as a concept because it is useful in the definition of rank.
+    I also feel this definition is probably not sufficient,
+    what I really mean is "take all the ωs in a fluxion and replace them with xs"
+)
+
+the rank of a fluxion is the largest power of ω that occurs in it and is defined as such:
+rank(z) = ln((O⁻¹∘p(z))(ω))/ln(ω)
+(
+    I think this definition needs explaining:
+    in big O notation you can say that certain programs "are" O(x) or O(log(x)) etc.
+    I have chosen to interpret this as the function of their time complexity *equaling* O(x) or O(log(x)) etc.
+    O is a bijection but not a function (just like \x -> ±x).
+    O⁻¹ however is a function but is not an injection or surjection (just like \x -> |x|).
+)
+
+a fluxion can be "normalised" as such:
+norm(z) = z/(ω^rank(z))
+
+ℜ(norm(7ω²+3+2ε)) = 7
+ℜ(norm(2+7ε+5ε²)) = 2
+ℜ(norm(2ε³+5ε²)) = 5
+
+0 < 9999999999ε < 0.0000000001
+5ε² ∉ ℝ
+ℜ(7ω²+3+2ε) = 3
+
+x∈ℝ, f(x)∈ℝ ⇒ f⁽ⁿ⁾(x) = n!ℜ(f(x+ε)/(ε^n))
+
+fluxions are useful when working with zero as ε is pretty much zero but one can divide by it
+you can replace awkward zeros with εs and take ℜ when you are done and you'll probably be right
+(
+    for any continuous function f from reals to reals, I conjecture that when f(0) is defined, f(0) = ℜ(f(ε))
+    this is trivially true if f is the identity function but I don't know if there are counter examples
+    ( f is continuous ⇒ ℜ∘((T^ε)f) = f )
+    if this is not true then the statement
+    f∈K ⟺ (ℜ∘((T^ε)f) = f)
+    is true where K is the largest set of functions where it is true, 
+    functions in K would be nicely behaved in many ways.
+)
+
+ln(x) = ℜ(x^ε/ε - ω) = ℜ((x^ε-1)/ε)
+π = ℜ(((-1)^ε-1)/iε)
+e = ℜ((1+ε)^ω)
+
+fake haskell code:
+(/') :: (ℝ -> ℝ) -> (ℝ -> ℝ) -> (ℝ -> ℝ)
+(f /' g) x = (f x) / (g x)
+
+d :: (ℝ -> ℝ) -> (ℝ -> ℝ<ε>)
+d f x = f (x+ε) - f x
+
+∇ :: (ℝ -> ℝ) -> (ℝ -> ℝ)
+∇ f x = ℜ . (d f x) /' (d (\x -> x) x)
+
+> ∇ (\x -> x²)
+ℜ . (d (\x -> x²) /' d (\x -> x))
+ℜ . (\x -> (x+ε)² - x²) /' (\x -> (x+ε) - x)
+ℜ . \x -> ((x+ε)² - x²) / ((x+ε) - x)
+ℜ . \x -> (x² + 2xε + ε² - x²) / ε
+ℜ . \x -> (2xε + ε²) / ε
+ℜ . \x -> 2x + ε
+\x -> ℜ (2x + ε)
+\x -> 2x
+
+here's a playlist of videos that fluxions help you to have a deeper understanding of:
+https://youtube.com/playlist?list=PLpd7l38mvDXfyE-zmw2csetDhgDECd64n&si=EBUE1nkMUQ9Li1qh
