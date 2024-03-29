@@ -61,6 +61,13 @@ ln(x) = lim(x^ε/ε - ω) = lim((x^ε-1)/ε)
 π = lim(((-1)^ε-1)/iε)
 e = lim((1+ε)^ω)
 
+a function f from reals to reals is continuous at a point x iff lim(f(x) - f(x+ε)) = 0 and lim(f(x) - f(x-ε)) = 0
+(
+    I think?
+    you could create a function that is continuous around every real within an infinitessimal range, but still discontinuous everywhere in the reals
+    but plz don't ok,,,
+)
+
 fake haskell code:
 (/') :: (ℝ -> ℝ) -> (ℝ -> ℝ) -> (ℝ -> ℝ)
 (f /' g) x = (f x) / (g x)
