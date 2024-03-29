@@ -48,11 +48,11 @@ cats = ["kitka","graham","jasper"] :: N String
 
 dogs = ["eryk"] :: N String
 
-people = ["katya","anna","cosmo"] :: N String
+people = ["anna","cosmo"] :: N String
 
-happy = ["kitka","jasper","katya"] :: N String
+happy = ["kitka","jasper"] :: N String
 
-love = [("katya","kitka"),("katya","graham"),("katya","jasper"),("kitka","katya"),("kitka","graham"),("graham","katya"),("graham","kitka"),("jasper","kitka"),("katya","anna"),("anna","katya"),("anna","eryk"),("anna","cosmo"),("katya","cosmo"),("cosmo","katya"),("cosmo","anna"),("anna","kitka"),("anna","jasper"),("cosmo","kitka")] :: V1 String
+love = [("kitka","graham"),("graham","katya"),("graham","kitka"),("jasper","kitka"),("anna","katya"),("anna","eryk"),("anna","cosmo"),("cosmo","anna"),("anna","kitka"),("anna","jasper"),("cosmo","kitka")] :: V1 String
 
 s0 = most cats (are happy)
 s1 = all people (love `e` some cats)
