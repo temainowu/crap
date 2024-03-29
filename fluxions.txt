@@ -13,8 +13,8 @@ the function 'lim' can be defined as:
 z∈ℝ<ε> ⇒ lim(z)∈ℝ
 z∈ℝ<ε>, x∈ℝ, y∈ℝ, x < z < y ⇒ x < lim(z) < y 
 
-the characteristic function f of a fluxion z is the function such that f(ω) = z
-p(z) = f ⇒ f(ω) = z
+the characteristic function C of a fluxion z is the function such that C(ω) = z
+p(z) = C ⇒ C(ω) = z
 (
     I don't think "characteristic function" is a good name for this,
     I have only really defined this as a concept because it is useful in the definition of rank.
