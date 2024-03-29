@@ -1,29 +1,7 @@
-import OptimalityTheory.Phones
-import OptimalityTheory.OT (Lexeme, Constraint, Grammar, toLexeme)
-
 type Fluxion = ([Int], Int)
--- Fluxions are used to represent the harmony of a form
--- the smaller the fluxion, the more harmonic the form
 -- ([a₀,a₁,...,aₖ],n) represents the fluxion (a₀ε⁰+a₁ε¹+...+aₖεᵏ)ωⁿ
 -- this is able to represent all possible finitely long integer fluxions
 -- see fluxions.txt for more information on fluxions
-
-(≻) :: Lexeme -> Lexeme -> Grammar -> String -> Bool
-x ≻ y = \g i -> fluxionLEq (eval g (toLexeme i) x) (eval g (toLexeme i) y)
-
-{- not possible because Constraint can't be an instance of Eq
-(⪢) :: Constraint -> Constraint -> Grammar -> Bool
-x ⪢ y = \g -> find g x < find g y
-
-find :: Eq a => [a] -> a -> Int
-find xs y = head [i | (i,x) <- zip [0..] xs, y == x]
--}
-
-
-eval :: Grammar -> Lexeme -> Lexeme -> Fluxion
-eval g i o = (map (\ f -> f i o) g,0)
-
--- Fluxions
 
 fluxionLEq :: Fluxion -> Fluxion -> Bool
 fluxionLEq ([],n) ([],m) = True
