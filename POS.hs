@@ -52,7 +52,7 @@ people = ["anna","cosmo"] :: N String
 
 happy = ["kitka","jasper"] :: N String
 
-love = [("kitka","graham"),("graham","katya"),("graham","kitka"),("jasper","kitka"),("anna","katya"),("anna","eryk"),("anna","cosmo"),("cosmo","anna"),("anna","kitka"),("anna","jasper"),("cosmo","kitka")] :: V1 String
+love = [("kitka","graham"),("graham","kitka"),("jasper","kitka"),("anna","eryk"),("anna","cosmo"),("cosmo","anna"),("anna","kitka"),("anna","jasper"),("cosmo","kitka")] :: V1 String
 
 s0 = most cats (are happy)
 s1 = all people (love `e` some cats)
