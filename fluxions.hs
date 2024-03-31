@@ -16,7 +16,7 @@ instance (Ord n, Num n) => Ord (Fluxion n) where
 
 instance (Show n, Ord n, Num n) => Show (Fluxion n) where
     show (F ([],n)) = "0"
-    show (F (xs,n)) = (tail
+    show h@(F (xs,n)) = (tail
                         . tail
                         . tail
                         . unpack
@@ -153,6 +153,24 @@ prop_leq x y = leq x y == fluxionLEq x y
 
 --- 
 
+-- returns a fluxion equal to the input
+-- that has no trailing zeros,
+-- as few leading zeros as possible,
+-- and a non-negative power of ω
+normalise' :: (Eq n, Num n) => Fluxion n -> Fluxion n
+normalise' (F (0:xs,n)) = F (xs,n-1)
+normalise' (F (xs,n)) | last xs == 0 = normalise (F (init xs,n))
+                     | n < 0 = normalise (F (0:xs,n+1))
+                     | n == 0 = F (xs,n)
+                     | head xs == 0 = normalise (F (tail xs,n-1))
+
+-- returns a fluxion equal to the input
+-- that has no trailing or leading zeros
+normalise :: (Eq n, Num n) => Fluxion n -> Fluxion n
+normalise (F (0:xs,n)) = F (xs,n-1)
+normalise (F (xs,n)) | last xs == 0 = normalise (F (init xs,n))
+                     | head xs == 0 = normalise (F (tail xs,n-1))
+                     
 -- (raise (/)) is the same as /' in fluxions.txt
 raise :: (b -> b -> c) -> (a -> b) -> (a -> b) -> a -> c
 raise op f g x = f x `op` g x
