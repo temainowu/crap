@@ -190,7 +190,8 @@ kanskje _ Nothing = Nothing
 
 -- the same as ∇ in fluxions.txt
 diff :: (Eq n, Num n, Fractional n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
-diff f n = kanskje real (divide (raise (:/) (d f) (d id) n))
+diff f = kanskje real . divide . raise (:/) (d f) (d id)
+-- diff f n = kanskje real (divide (d f n :/ F ([0,1],0)))
 
 -- simplifies RationalFluxions into Fluxions
 divide :: (Eq n, Num n, Fractional n) => RationalFluxion n -> Maybe (Fluxion n)
