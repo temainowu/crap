@@ -176,7 +176,7 @@ real (F (x:xs,n)) | n < 0 = 0
                   | n == 0 = x
                   | n > 0 = real (F (xs,n-1))
 
--- the same as lim in fluxions.txt, but gives Nothing when ±ω
+-- the same as lim in fluxions.txt, but gives Nothing when ±∞
 lim :: (Num n,Eq n) => Fluxion n -> Maybe n
 lim (F ([],n)) = Just 0
 lim (F (x:xs,0)) = Just x
