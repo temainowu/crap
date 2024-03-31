@@ -5,6 +5,12 @@ newtype Fluxion n = F ([n], Int)
 -- this is able to represent all possible finitely long fluxions
 -- see fluxions.txt for more information on fluxions
 
+instance (Eq n, Num n) => Eq (Fluxion n) where
+    F (xs,n) == F (ys,m) = uncurry (==) (doubleNormalise (xs,n) (ys,m))
+
+instance (Ord n, Num n) => Ord (Fluxion n) where
+    compare x y = if leq x y then LT else GT
+
 instance (Show n, Ord n, Num n) => Show (Fluxion n) where
     show (F ([],n)) = "0"
     show (F (xs,n)) = (tail
@@ -14,16 +20,13 @@ instance (Show n, Ord n, Num n) => Show (Fluxion n) where
                         . replace (pack "  ") (pack " 1 ")
                         . replace (pack " 1") (pack " ")
                         . replace (pack "^1") (pack "")
-                        . replace (pack "ε^-") (pack "∞^")
+                        . replace (pack "ε^-") (pack "∞^") -- it's not letting me print ω
                         . replace (pack "ε^0") (pack "")
                         . pack)
                         $ concatMap (\(x,i) ->
                         if x == 0 then ""
                         else (if x < 0 then " - " ++ show (-x) ++ "ε^" ++ show i
                         else " + " ++ show x ++ "ε^" ++ show i)) (zip xs [-n..])
-
-instance (Eq n, Num n) => Eq (Fluxion n) where
-    F (xs,n) == F (ys,m) = uncurry (==) (doubleNormalise (xs,n) (ys,m))
 
 instance Num n => Num (Fluxion n) where
     F (xs,n) + F (ys,m) | n == m = F (losslessZipWith (+) xs ys,n)
@@ -39,11 +42,9 @@ instance Num n => Num (Fluxion n) where
     signum (F (xs,n)) = F ([1],n)
     fromInteger n = F ([fromInteger n],0)
 
-instance (Ord n, Num n) => Ord (Fluxion n) where
-    compare x y = if leq x y then LT else GT
-
 ---
 
+-- extends the shorter list with zeros and then zips them with some function
 losslessZipWith :: (Num a, Num b) => (a -> b -> c) -> [a] -> [b] -> [c]
 losslessZipWith f xs ys = zipWith f (xs ++ replicate (length ys - length xs) 0) (ys ++ replicate (length xs - length ys) 0)
 
@@ -59,8 +60,9 @@ cartProduct f (xs,ys) = map (flip map ys . f) xs
 separate :: [(a,b)] -> ([a],[b])
 separate = foldr (\(x,y) (xs,ys) -> (x:xs,y:ys)) ([],[])
 
----
+-- two implementations of <= for fluxions:
 
+-- mine (worse):
 fluxionLEq :: Fluxion Int -> Fluxion Int -> Bool
 fluxionLEq (F ([],n)) (F ([],m)) = True
 fluxionLEq (F ([],n)) (F (y:ys,m))
@@ -79,7 +81,7 @@ fluxionLEq (F (x:xs,n)) (F (y:ys,m))
           | x > y -> False
           | otherwise -> fluxionLEq (F (xs,n-1)) (F (ys,m-1))
 
--- equivalent to fluxionLEq written by cosmo bobak (https://github.com/cosmobobak):
+-- cosmo (https://github.com/cosmobobak)'s (better):
 
 -- takes two fluxions to representations with the same "n" and equal-length lists
 doubleNormalise :: Num n => ([n], Int) -> ([n], Int) -> (([n], Int), ([n], Int))
@@ -98,11 +100,13 @@ doubleNormalise r@(xs, n) l@(ys, m)
 leq :: (Ord n, Num n) => Fluxion n -> Fluxion n -> Bool
 leq (F x) (F y) = uncurry (\(xs, _) (ys, _) -> xs <= ys) (doubleNormalise x y)
 
+-- test to see if they are equivalent
 prop_leq :: Fluxion Int -> Fluxion Int -> Bool
 prop_leq x y = leq x y == fluxionLEq x y
 
 --- 
 
+-- (raise (/)) is the same as /' in fluxions.txt
 raise :: (b -> b -> c) -> (a -> b) -> (a -> b) -> a -> c
 raise op f g x = f x `op` g x
 
@@ -114,12 +118,26 @@ p (F (zs,n)) = raise (*) (^ n) (`p'` zs)
         p' x (n:ns) = F ([n],0) + (F ([p' x ns],0)) / (F ([x],0))
 -}
 
+-- the same as d in fluxions.txt
 d :: Num n => (Fluxion n -> Fluxion n) -> (n -> Fluxion n)
 d f x = f (F ([x],0) + F ([0,1],0)) - f (F ([x],0))
 
+-- the same as ℜ in fluxions.txt
+real :: Num n => Fluxion n -> n
+real (F ([],_)) = 0
+real (F (x:xs,n)) | n < 0 = 0
+                  | n == 0 = x
+                  | n > 0 = real (F (xs,n-1))
+
+-- the same as lim in fluxions.txt, but gives Nothing when ±ω
 lim :: (Num n,Eq n) => Fluxion n -> Maybe n
 lim (F ([],n)) = Just 0
 lim (F (x:xs,0)) = Just x
 lim (F (0:xs,n)) = lim (F (xs,n-1))
 lim (F (xs,n)) | n < 0 = Just 0
                | otherwise = Nothing
+
+{-
+diff :: Fractional n => (Fluxion n -> Fluxion n) -> n -> n
+diff f = real . raise (/) (d f) (d id)
+-}
