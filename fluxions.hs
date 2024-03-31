@@ -1,15 +1,18 @@
 import Data.Text (replace, unpack, pack)
+import Data.Ratio (numerator, denominator)
 
 newtype Fluxion n = F ([n], Int)
 -- F ([a₀,a₁,...,aₖ],n) represents the fluxion (a₀ε⁰+a₁ε¹+...+aₖεᵏ)ωⁿ
 -- this is able to represent all possible finitely long fluxions
 -- see fluxions.txt for more information on fluxions
 
+data RationalFluxion n = (Fluxion n) :/ (Fluxion n)
+
 instance (Eq n, Num n) => Eq (Fluxion n) where
     F (xs,n) == F (ys,m) = uncurry (==) (doubleNormalise (xs,n) (ys,m))
 
 instance (Ord n, Num n) => Ord (Fluxion n) where
-    compare x y = if leq x y then LT else GT
+    x <= y = leq x y
 
 instance (Show n, Ord n, Num n) => Show (Fluxion n) where
     show (F ([],n)) = "0"
@@ -17,6 +20,7 @@ instance (Show n, Ord n, Num n) => Show (Fluxion n) where
                         . tail
                         . tail
                         . unpack
+                        . replace (pack " .") (pack " 1.")
                         . replace (pack "  ") (pack " 1 ")
                         . replace (pack " 1") (pack " ")
                         . replace (pack "^1") (pack "")
@@ -28,25 +32,55 @@ instance (Show n, Ord n, Num n) => Show (Fluxion n) where
                         else (if x < 0 then " - " ++ show (-x) ++ "ε^" ++ show i
                         else " + " ++ show x ++ "ε^" ++ show i)) (zip xs [-n..])
 
-instance Num n => Num (Fluxion n) where
+instance (Eq n, Num n) => Num (Fluxion n) where
     F (xs,n) + F (ys,m) | n == m = F (losslessZipWith (+) xs ys,n)
                         | n < m = F (0:xs,n+1) + F (ys,m)
                         | n > m = F (xs,n) + F (0:ys,m+1)
     F (xs,n) - F (ys,m) | n == m = F (losslessZipWith (-) xs ys,n)
                         | n < m = F (0:xs,n+1) - F (ys,m)
                         | n > m = F (xs,n) - F (0:ys,m+1)
-    F (xs,n) * F (ys,m) | n == m = F ((matrixFold (+) . cartProduct (*) . separate . losslessZipWith (,) xs) ys,2*n)
+    F (xs,n) * F (ys,m) | n == m = F ((matrixFold (+)
+                                    . cartProduct (*)
+                                    . separate)
+                                    (losslessZipWith (,) xs ys)
+                                    , 2*n)
                         | n < m = F (0:xs,n+1) * F (ys,m)
                         | n > m = F (xs,n) * F (0:ys,m+1)
     abs (F (xs,n)) = F (xs,0)
+    signum (F (0:xs,n)) = signum (F (xs,n-1))
     signum (F (xs,n)) = F ([1],n)
     fromInteger n = F ([fromInteger n],0)
 
+instance (Show n, Ord n, Num n) => Show (RationalFluxion n) where
+    show (x :/ y) = '(' : show x ++ ") / (" ++ show y ++ ")"
+
+instance (Eq n, Num n) => Eq (RationalFluxion n) where
+    (x :/ y) == (z :/ w) = x * w == z * y
+
+instance (Ord n, Num n) => Ord (RationalFluxion n) where
+    (x :/ y) <= (z :/ w) = (x * w - z * y) * (y * w) <= 0
+
+instance (Eq n, Num n) => Num (RationalFluxion n) where
+    (x :/ y) + (z :/ w) = (x * w + z * y) :/ (y * w)
+    (x :/ y) - (z :/ w) = (x * w - z * y) :/ (y * w)
+    (x :/ y) * (z :/ w) = (x * z) :/ (y * w)
+    abs (x :/ y) = abs x :/ abs y
+    signum (x :/ y) = signum x :/ signum y
+    fromInteger n = fromInteger n :/ 1
+
+instance (Eq n, Num n) => Fractional (RationalFluxion n) where
+    (x :/ y) / (z :/ w) = (x * w) :/ (y * z)
+    recip (x :/ y) = y :/ x
+    fromRational n = fromInteger (numerator n) :/ fromInteger (denominator n)
+
 ---
 
--- extends the shorter list with zeros and then zips them with some function
+-- takes a function and two lists, 
+-- extends the shorter list with zeros and then zips them with the function
 losslessZipWith :: (Num a, Num b) => (a -> b -> c) -> [a] -> [b] -> [c]
-losslessZipWith f xs ys = zipWith f (xs ++ replicate (length ys - length xs) 0) (ys ++ replicate (length xs - length ys) 0)
+losslessZipWith f xs ys = zipWith f
+    (xs ++ replicate (length ys - length xs) 0)
+    (ys ++ replicate (length xs - length ys) 0)
 
 -- takes a matrix and folds across the diagonals
 matrixFold :: Num a => (a -> a -> a) -> [[a]] -> [a]
@@ -54,11 +88,24 @@ matrixFold _ [] = []
 matrixFold _ [xs] = xs
 matrixFold f ((x:xs):(ys:xss)) = x : matrixFold f (losslessZipWith f xs ys : xss)
 
+-- creates a matrix of all possible f-combinations of the elements of xs and ys
 cartProduct :: (a -> a -> b) -> ([a],[a]) -> [[b]]
 cartProduct f (xs,ys) = map (flip map ys . f) xs
 
+-- does the obvious from it's type signature
 separate :: [(a,b)] -> ([a],[b])
 separate = foldr (\(x,y) (xs,ys) -> (x:xs,y:ys)) ([],[])
+
+---
+
+-- for looking at them <3
+rawShow :: Fluxion n -> ([n], Int)
+rawShow (F x) = x
+
+pMap :: (a -> b) -> (a,a) -> (b,b)
+pMap f (x,y) = (f x, f y)
+
+---
 
 -- two implementations of <= for fluxions:
 
@@ -119,7 +166,7 @@ p (F (zs,n)) = raise (*) (^ n) (`p'` zs)
 -}
 
 -- the same as d in fluxions.txt
-d :: Num n => (Fluxion n -> Fluxion n) -> (n -> Fluxion n)
+d :: (Eq n, Num n) => (Fluxion n -> Fluxion n) -> (n -> Fluxion n)
 d f x = f (F ([x],0) + F ([0,1],0)) - f (F ([x],0))
 
 -- the same as ℜ in fluxions.txt
@@ -137,7 +184,16 @@ lim (F (0:xs,n)) = lim (F (xs,n-1))
 lim (F (xs,n)) | n < 0 = Just 0
                | otherwise = Nothing
 
-{-
-diff :: Fractional n => (Fluxion n -> Fluxion n) -> n -> n
-diff f = real . raise (/) (d f) (d id)
--}
+kanskje :: (a -> b) -> Maybe a -> Maybe b
+kanskje f (Just x) = Just (f x)
+kanskje _ Nothing = Nothing
+
+diff :: (Eq n, Num n, Fractional n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
+diff f n = kanskje real (divide (raise (:/) (d f) (d id) n))
+
+divide :: (Eq n, Num n, Fractional n) => RationalFluxion n -> Maybe (Fluxion n)
+divide (F (xs,n) :/ F ([x],0)) = Just (F (map (/ x) xs,n))
+divide (F (xs,n) :/ F (0:ys,m)) = divide (F (xs,n) :/ F (ys,m-1))
+divide (F (xs,n) :/ F (ys,0)) | last ys /= 0 = Nothing
+                              | otherwise = divide (F (xs,n) :/ F (init ys,0))
+divide (F (xs,n) :/ F (ys,m)) = divide (F (xs,n-m) :/ F (ys,0))
