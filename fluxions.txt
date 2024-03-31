@@ -46,7 +46,7 @@ norm(z) = z/(ω^rank(z))
 ℜ(norm(2+7ε+5ε²)) = 2
 ℜ(norm(2ε³+5ε²)) = 5
 
-ℜ(x) = lim(x) iff ℜ(x) = ℜ(norm(x)) 
+if ℜ(x) = lim(x) then ℜ(x) = ℜ(norm(x)) 
 
 x∈ℝ, f(x)∈ℝ ⇒ f⁽ⁿ⁾(x) = n!ℜ(f(x+ε)/(ε^n))
 
