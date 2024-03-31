@@ -159,9 +159,9 @@ raise op f g x = f x `op` g x
 
 {-
 -- characteristic function of a fluxion
-p :: Fluxion Int -> Fluxion Int -> Fluxion a
+p :: Fluxion n -> (Fluxion n -> Fluxion n)
 p (F (zs,n)) = raise (*) (^ n) (`p'` zs)
-    where
+    where 
         p' x (n:ns) = F ([n],0) + (F ([p' x ns],0)) / (F ([x],0))
 -}
 
@@ -192,6 +192,10 @@ kanskje _ Nothing = Nothing
 diff :: (Eq n, Num n, Fractional n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
 diff f = kanskje real . divide . raise (:/) (d f) (d id)
 -- diff f n = kanskje real (divide (d f n :/ F ([0,1],0)))
+
+-- diff (\x -> 2^x) 2
+-- kanskje real (divide (d (\x -> 2^x) 2 :/ F ([0,1],0)))
+-- kanskje real (divide ((2^(F ([x],0) + F ([0,1],0)) - 2^(F ([x],0)) ) :/ F ([0,1],0)))
 
 -- simplifies RationalFluxions into Fluxions
 divide :: (Eq n, Num n, Fractional n) => RationalFluxion n -> Maybe (Fluxion n)
