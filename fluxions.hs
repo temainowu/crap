@@ -190,14 +190,14 @@ kanskje f (Just x) = Just (f x)
 kanskje _ Nothing = Nothing
 
 -- the same as ∇ in fluxions.txt
-diff :: (Eq n, Num n, Fractional n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
-diff f = kanskje real . divide . raise (:/) (d f) (d id)
--- diff f n = kanskje real (divide (d f n :/ F ([0,1],0)))
+diff :: (Eq n, Num n, Fractional n, Ord n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
+diff f = kanskje lim . divide . raise (:/) (d f) (d id)
+-- diff f n = kanskje lim (divide (d f n :/ F ([0,1],0)))
 
 -- diff (\x -> 2^x) 2
--- kanskje real (divide (d (\x -> 2^x) 2 :/ F ([0,1],0)))
--- kanskje real (divide ((2^(F ([2],0) + F ([0,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0)))
--- kanskje real (divide ((2^(F ([2,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0))) 2
+-- kanskje lim (divide (d (\x -> 2^x) 2 :/ F ([0,1],0)))
+-- kanskje lim (divide ((2^(F ([2],0) + F ([0,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0)))
+-- kanskje lim (divide ((2^(F ([2,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0))) 2
 
 -- lim((2^2*2^ε - 2^2)/ε)
 -- lim(4*(2^ε - 1)/ε)
