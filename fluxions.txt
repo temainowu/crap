@@ -29,7 +29,7 @@ p(z) = C ⇒ C(ω) = z
 )
 
 the rank of a fluxion is the largest power of ω that occurs in it and is defined as such:
-rank(z) = ln((O⁻¹∘p(z))(ω))/ln(ω)
+rank(z) = log_ω((O⁻¹∘p(z))(ω)) = ln((O⁻¹∘p(z))(ω))/ln(ω)
 (
     I think this definition needs explaining:
     in big O notation you can say that certain programs "are" O(x) or O(log(x)) etc.
@@ -45,8 +45,7 @@ norm(z) = z/(ω^rank(z))
 ℜ(norm(2+7ε+5ε²)) = 2
 ℜ(norm(2ε³+5ε²)) = 5
 
-0 < 9999999999ε < 0.0000000001
-5ε² ∉ ℝ
+ℜ(x) = lim(x) iff ℜ(x) = ℜ(norm(x)) 
 
 x∈ℝ, f(x)∈ℝ ⇒ f⁽ⁿ⁾(x) = n!ℜ(f(x+ε)/(ε^n))
 
@@ -81,6 +80,8 @@ a function f from reals to reals is continuous at a point x iff lim(f(x) - f(x+�
     but still discontinuous everywhere in the reals,
     but plz don't ok,,,
 )
+
+ℜ, lim, and norm are all idempotent.
 
 fake haskell code:
 (/') :: (ℝ -> ℝ) -> (ℝ -> ℝ) -> (ℝ -> ℝ)
