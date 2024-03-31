@@ -195,13 +195,13 @@ diff f = kanskje real . divide . raise (:/) (d f) (d id)
 
 -- diff (\x -> 2^x) 2
 -- kanskje real (divide (d (\x -> 2^x) 2 :/ F ([0,1],0)))
--- kanskje real (divide ((2^(F ([x],0) + F ([0,1],0)) - 2^(F ([x],0)) ) :/ F ([0,1],0)))
--- kanskje real (divide ((2^(F ([x,1],0)) - 2^(F ([x],0)) ) :/ F ([0,1],0)))
+-- kanskje real (divide ((2^(F ([2],0) + F ([0,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0)))
+-- kanskje real (divide ((2^(F ([2,1],0)) - 2^(F ([2],0)) ) :/ F ([0,1],0))) 2
 
--- lim((2^x*2^ε - 2^x)/ε)
--- lim(2^x*(2^ε - 1)/ε)
--- 2^x*lim((2^ε - 1)/ε)
--- 2^x*ln(2)
+-- lim((2^2*2^ε - 2^2)/ε)
+-- lim(4*(2^ε - 1)/ε)
+-- 4*lim((2^ε - 1)/ε)
+-- 4*ln(2)
 -- how is the computer supposed to do any of this?
 
 -- simplifies RationalFluxions into Fluxions
