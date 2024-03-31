@@ -13,7 +13,8 @@ the function 'lim' can be defined as:
 z∈ℝ<ε> ⇒ lim(z)∈ℝ<+∞,-∞>
 z∈ℝ<ε>, x∈ℝ, y∈ℝ, x < z < y ⇒ x < lim(z) < y 
 
-a similar function 'ℜ' can be defined as simply taking the real part of a fluxion:
+a similar function 'ℜ' can be defined as simply taking the real part of a fluxion,
+similarly to ℜ in the complex numbers.
 ℜ(7ω²+3+2ε) = 3
 but
 lim(7ω²+3+2ε) = ∞
@@ -102,6 +103,16 @@ lim . \x -> (2xε + ε²) / ε
 lim . \x -> 2x + ε
 \x -> lim (2x + ε)
 \x -> 2x
+
+--- all things thus far have been mainly about calculus in terms of fluxions,
+--- but there are other things that can be done with them too.
+
+https://youtu.be/h_CFMtRQiek?si=0UXxY1GJNnrzFgC1 la, fluxions are useful in measure theory.
+like, you can think of a collection of points as having rank 0, 
+a collection of lines as having rank 1, 
+a collection of planes as having rank 2, etc.
+
+https://docs.google.com/spreadsheets/d/1SlwYowzaqBGR62lomQKOvZ6IodOgqaas_EaylvEEyzM/edit?usp=sharing
 
 here's a playlist of videos that fluxions help you to have a deeper understanding of:
 https://youtube.com/playlist?list=PLpd7l38mvDXfyE-zmw2csetDhgDECd64n&si=EBUE1nkMUQ9Li1qh
