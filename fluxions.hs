@@ -188,12 +188,14 @@ kanskje :: (a -> b) -> Maybe a -> Maybe b
 kanskje f (Just x) = Just (f x)
 kanskje _ Nothing = Nothing
 
+-- the same as ∇ in fluxions.txt
 diff :: (Eq n, Num n, Fractional n) => (Fluxion n -> Fluxion n) -> n -> Maybe n
 diff f n = kanskje real (divide (raise (:/) (d f) (d id) n))
 
+-- simplifies RationalFluxions into Fluxions
 divide :: (Eq n, Num n, Fractional n) => RationalFluxion n -> Maybe (Fluxion n)
-divide (F (xs,n) :/ F ([x],0)) = Just (F (map (/ x) xs,n))
 divide (F (xs,n) :/ F (0:ys,m)) = divide (F (xs,n) :/ F (ys,m-1))
+divide (F (xs,n) :/ F ([x],0)) = Just (F (map (/ x) xs,n))
 divide (F (xs,n) :/ F (ys,0)) | last ys /= 0 = Nothing
                               | otherwise = divide (F (xs,n) :/ F (init ys,0))
 divide (F (xs,n) :/ F (ys,m)) = divide (F (xs,n-m) :/ F (ys,0))
