@@ -1,4 +1,4 @@
-data N = N [N]
+newtype N = N [N]
 
 instance Enum N where
     toEnum 0 = N [toEnum 0]
@@ -11,7 +11,7 @@ instance Eq N where
 instance Foldable N where
     foldr f z (N xs) = foldr f z xs
 
-x = N [x] :: N 
+x = N [x] :: N
 
 suc :: N -> N
 suc (N n) = N (n ++ [suc (N n)])
@@ -33,10 +33,11 @@ instance Foldable N' where
     foldr f z X = z
     foldr f z (S n) = f n (foldr f z n)
 
-instance Elem N' where
-    elem X _ = True
-    elem _ X = False
-    elem (S n) (S m) = elem n m
+{-
+elem X _ = True
+elem _ X = False
+elem (S n) (S m) = elem n m
+-}
 
 instance Ord N' where
     compare X X = EQ
@@ -45,4 +46,4 @@ instance Ord N' where
     compare (S n) (S m) = compare n m
 
 suc' :: N' -> N'
-suc' n = S n
+suc' = S
