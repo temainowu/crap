@@ -176,13 +176,14 @@ real (F (x:xs,n)) | n < 0 = 0
                   | n == 0 = x
                   | n > 0 = real (F (xs,n-1))
 
--- the same as lim in fluxions.txt, but gives Nothing when ±∞
-lim :: (Num n,Eq n) => Fluxion n -> Maybe n
-lim (F ([],n)) = Just 0
-lim (F (x:xs,0)) = Just x
+-- the same as lim in fluxions.txt
+lim :: (Num n,Eq n,Ord n,Fractional n) => Fluxion n -> n
+lim (F ([],n)) = 0
+lim (F (x:xs,0)) = x
 lim (F (0:xs,n)) = lim (F (xs,n-1))
-lim (F (xs,n)) | n < 0 = Just 0
-               | otherwise = Nothing
+lim (F (xs,n)) | n < 0 = 0
+               | head xs > 0 = 1/0
+               | head xs < 0 = -1/0
 
 kanskje :: (a -> b) -> Maybe a -> Maybe b
 kanskje f (Just x) = Just (f x)
