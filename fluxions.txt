@@ -62,9 +62,17 @@ you can replace awkward zeros with εs and take lim when you are done and you'll
     functions in K would be nicely behaved in many ways.
 )
 
-ln(x) = lim(x^ε/ε - ω) = lim((x^ε-1)/ε)
 π = lim(((-1)^ε-1)/iε)
 e = lim((1+ε)^ω)
+ln(x) = lim(x^ε/ε - ω) = lim((x^ε-1)/ε)
+(
+    this expression for ln(x) does, as expected, differentiate to approximately 1/x:
+    d(x^ε/ε - ω)/dx = x^(ε-1) ≈ x^(-1) = 1/x
+    since ln(x) and e^x are inverse functions,
+    e^x = lim((1+xε)^ω)
+    and so
+    e = e^1 = lim((1+ε)^ω)
+)
 
 a function f from reals to reals is continuous at a point x iff lim(f(x) - f(x+ε)) = 0 and lim(f(x) - f(x-ε)) = 0
 (
