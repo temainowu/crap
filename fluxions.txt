@@ -110,9 +110,10 @@ lim . \x -> 2x + ε
 https://youtu.be/h_CFMtRQiek?si=0UXxY1GJNnrzFgC1 la, fluxions are useful in measure theory.
 like, you can think of a collection of points as having rank 0, 
 a collection of lines as having rank 1, 
-a collection of planes as having rank 2, etc.
-
+a collection of planes as having rank 2, etc:
 https://docs.google.com/spreadsheets/d/1SlwYowzaqBGR62lomQKOvZ6IodOgqaas_EaylvEEyzM/edit?usp=sharing
+
+---
 
 here's a playlist of videos that fluxions help you to have a deeper understanding of:
 https://youtube.com/playlist?list=PLpd7l38mvDXfyE-zmw2csetDhgDECd64n&si=EBUE1nkMUQ9Li1qh
