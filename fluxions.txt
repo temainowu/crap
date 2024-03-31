@@ -10,8 +10,14 @@ x∈ℝ, y∈ℝ, 0 < x, 0 < y ⇒ 0 < xε < y
 ω = ε⁻¹
 
 the function 'lim' can be defined as:
-z∈ℝ<ε> ⇒ lim(z)∈ℝ
+z∈ℝ<ε> ⇒ lim(z)∈ℝ<+∞,-∞>
 z∈ℝ<ε>, x∈ℝ, y∈ℝ, x < z < y ⇒ x < lim(z) < y 
+
+a similar function 'ℜ' can be defined as simply taking the real part of a fluxion:
+ℜ(7ω²+3+2ε) = 3
+but
+lim(7ω²+3+2ε) = ∞
+ℜ is the same as lim a lot of the time.
 
 the characteristic function C of a fluxion z is the function such that C(ω) = z
 p(z) = C ⇒ C(ω) = z
@@ -35,15 +41,14 @@ rank(z) = ln((O⁻¹∘p(z))(ω))/ln(ω)
 a fluxion can be "normalised" as such:
 norm(z) = z/(ω^rank(z))
 
-lim(norm(7ω²+3+2ε)) = 7
-lim(norm(2+7ε+5ε²)) = 2
-lim(norm(2ε³+5ε²)) = 5
+ℜ(norm(7ω²+3+2ε)) = 7
+ℜ(norm(2+7ε+5ε²)) = 2
+ℜ(norm(2ε³+5ε²)) = 5
 
 0 < 9999999999ε < 0.0000000001
 5ε² ∉ ℝ
-lim(7ω²+3+2ε) = 3
 
-x∈ℝ, f(x)∈ℝ ⇒ f⁽ⁿ⁾(x) = n!lim(f(x+ε)/(ε^n))
+x∈ℝ, f(x)∈ℝ ⇒ f⁽ⁿ⁾(x) = n!ℜ(f(x+ε)/(ε^n))
 
 fluxions are useful when working with zero as ε is pretty much zero but one can divide by it
 you can replace awkward zeros with εs and take lim when you are done and you'll probably be right
@@ -64,7 +69,8 @@ e = lim((1+ε)^ω)
 a function f from reals to reals is continuous at a point x iff lim(f(x) - f(x+ε)) = 0 and lim(f(x) - f(x-ε)) = 0
 (
     I think?
-    you could create a function that is continuous around every real within an infinitessimal range, but still discontinuous everywhere in the reals
+    you could create a function that is continuous around every real within an infinitessimal range, 
+    but still discontinuous everywhere in the reals,
     but plz don't ok,,,
 )
 
