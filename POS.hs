@@ -44,15 +44,15 @@ v `pi` qp = filter (\(_,x) -> qp (are [x])) v
 the :: [a] -> [a]
 the = (:[]) . head
 
-cats = ["kitka","graham","jasper"] :: N String
+cats = ["a","b","c"] :: N String
 
-dogs = ["eryk"] :: N String
+dogs = ["d"] :: N String
 
-people = ["anna","cosmo"] :: N String
+people = ["e","f"] :: N String
 
-happy = ["kitka","jasper"] :: N String
+happy = ["a","b"] :: N String
 
-love = [("kitka","graham"),("graham","kitka"),("jasper","kitka"),("anna","eryk"),("anna","cosmo"),("cosmo","anna"),("anna","kitka"),("anna","jasper"),("cosmo","kitka")] :: V1 String
+love = [("a","b"),("b","a"),("c","d"),("f","c"),("d","e"),("e","e"),("b","d"),("f","a"),("f","b")] :: V1 String
 
 s0 = most cats (are happy)
 s1 = all people (love `e` some cats)
