@@ -4,7 +4,7 @@ import Data.Ratio (numerator, denominator)
 newtype Fluxion n = F ([n], Int)
 -- F ([a₀,a₁,...,aₖ],n) represents the fluxion (a₀ε⁰+a₁ε¹+...+aₖεᵏ)ωⁿ
 -- this is able to represent all possible finitely long fluxions
--- see fluxions.txt for more information on fluxions
+-- see fluxions.txt (or https://ymirstuff.neocities.org/math) for more information on fluxions
 
 data RationalFluxion n = (Fluxion n) :/ (Fluxion n)
 
@@ -170,7 +170,7 @@ normalise :: (Eq n, Num n) => Fluxion n -> Fluxion n
 normalise (F (0:xs,n)) = F (xs,n-1)
 normalise (F (xs,n)) | last xs == 0 = normalise (F (init xs,n))
                      | head xs == 0 = normalise (F (tail xs,n-1))
-                     
+
 -- (raise (/)) is the same as /' in fluxions.txt
 raise :: (b -> b -> c) -> (a -> b) -> (a -> b) -> a -> c
 raise op f g x = f x `op` g x
@@ -222,6 +222,14 @@ diff f = kanskje lim . divide . raise (:/) (d f) (d id)
 -- 4*lim((2^ε - 1)/ε)
 -- 4*ln(2)
 -- how is the computer supposed to do any of this?
+
+certainty :: Maybe n -> n
+certainty (Just x) = x
+certainty Nothing = error "bad :("
+
+derive :: (Fractional n, Ord n, Enum n) => (Fluxion n -> Fluxion n) -> n -> n -> n -> [n]
+derive f a b s = map (certainty . diff f . (*s)) [a..b]
+-- derive (\x -> *function*) *start point* *# of samples* *step size*
 
 -- simplifies RationalFluxions into Fluxions
 divide :: (Eq n, Num n, Fractional n) => RationalFluxion n -> Maybe (Fluxion n)
