@@ -1,4 +1,5 @@
 import Prelude hiding ((*))
+
 data A = K | I
     deriving (Show, Eq)
 
@@ -27,7 +28,7 @@ ikikiki
 -}
 
 instance Semigroup M where
-    M xs <> M ys = M (xs ++ ys)
+    M xs <> M ys = reduceM (M (xs ++ ys))
 
 instance Monoid M where
     mempty = M []
@@ -43,6 +44,9 @@ instance Ord M where
 -- M is only partially ordered
 -- two elements are incomparable if the parity of the number of Is in them is different
 
+consM :: A -> M -> M
+consM x (M xs) = M (x:xs)
+
 reduceM :: M -> M
 reduceM (M xs) = (length xs * f) (M xs)
     where
@@ -50,7 +54,7 @@ reduceM (M xs) = (length xs * f) (M xs)
         f (M (K:K:xs)) = f (M (K:xs)) -- K is idempotent
         f (M (I:I:xs)) = f (M xs) -- I is its own inverse
         f (M (K:I:K:I:K:I:K:xs)) = f (M (K:I:K:xs)) -- ?
-        f (M (x:xs)) = M [x] <> f (M xs)
+        f (M (x:xs)) = consM x (f (M xs))
 
 (*) :: Int -> (a -> a) -> a -> a
 0 * _ = id
