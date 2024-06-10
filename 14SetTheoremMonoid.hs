@@ -48,20 +48,22 @@ consM :: A -> M -> M
 consM x (M xs) = M (x:xs)
 
 reduceM :: M -> M
-reduceM (M xs) = (length xs * f) (M xs)
+reduceM (M xs) = (length xs * simplifyM) (M xs)
     where
-        f (M []) = M []
-        f (M (K:K:xs)) = f (M (K:xs)) -- K is idempotent
-        f (M (I:I:xs)) = f (M xs) -- I is its own inverse
-        f (M (K:I:K:I:K:I:K:xs)) = f (M (K:I:K:xs)) -- ?
-        f (M (x:xs)) = consM x (f (M xs))
+        infixl 8 *
+        (*) :: Int -> (a -> a) -> a -> a
+        0 * _ = id
+        n * f = (n-1) * f . f
+        
+simplifyM :: M -> M
+simplifyM (M []) = M []
+simplifyM (M (K:K:xs)) = simplifyM (M (K:xs)) -- K is idempotent
+simplifyM (M (I:I:xs)) = simplifyM (M xs) -- I is its own inverse
+simplifyM (M (K:I:K:I:K:I:K:xs)) = simplifyM (M (K:I:K:xs)) -- ?
+simplifyM (M (x:xs)) = consM x (simplifyM (M xs))
 
-(*) :: Int -> (a -> a) -> a -> a
-0 * _ = id
-n * f = f . ((n-1) * f)
+reduced :: M -> Bool
+reduced (M xs) = xs == unwrap (simplifyM (M xs))
 
 unwrap :: M -> [A]
 unwrap (M xs) = xs
-
-reduced :: M -> Bool
-reduced (M xs) = xs == unwrap (reduceM (M xs))
