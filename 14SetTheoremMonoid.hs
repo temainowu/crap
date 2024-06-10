@@ -5,7 +5,6 @@ newtype M = M [A]
     deriving (Show)
 
 instance Eq M where
-    x /= y = not (x == y)
     x == y = unwrap (reduceM x) == unwrap (reduceM y)
 
 {-
@@ -33,9 +32,6 @@ instance Monoid M where
     mempty = M []
 
 instance Ord M where
-    x >= y = y <= x
-    x > y = y < x
-    x < y = x <= y && x /= y
     x <= y | not (reduced x && reduced y) = reduceM x <= reduceM y
     M [] <= M [] = True
     M (K:xs) <= M (K:ys) = M xs <= M ys -- 1
