@@ -1,3 +1,4 @@
+import Prelude hiding ((*))
 data A = K | I
     deriving (Show, Eq)
 
@@ -40,14 +41,21 @@ instance Ord M where
     x <= M (K:ys) = x <= M ys           -- 4
 
 -- M is only partially ordered
--- x and y are incomparable if the parity of the number of Is in x and y is different
+-- two elements are incomparable if the parity of the number of Is in them is different
 
 reduceM :: M -> M
-reduceM (M []) = M []
-reduceM (M (K:K:xs)) = reduceM (M (K:xs)) -- K is idempotent
-reduceM (M (I:I:xs)) = reduceM (M xs) -- I is its own inverse
-reduceM (M (K:I:K:I:K:I:K:xs)) = reduceM (M (K:I:K:xs)) -- ?
-reduceM (M (x:xs)) = M [x] <> reduceM (M xs)
+reduceM (M xs) = (length xs * f) (M xs)
+    where
+        f (M []) = M []
+        f (M (K:K:xs)) = f (M (K:xs)) -- K is idempotent
+        f (M (I:I:xs)) = f (M xs) -- I is its own inverse
+        f (M (K:I:K:I:K:I:K:xs)) = f (M (K:I:K:xs)) -- ?
+        f (M (x:xs)) = M [x] <> f (M xs)
+
+(*) :: Int -> (a -> a) -> a -> a
+0 * _ = id
+n * f = f . ((n-1) * f)
+
 unwrap :: M -> [A]
 unwrap (M xs) = xs
 
