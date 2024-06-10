@@ -150,5 +150,5 @@ classes 2 to 4 are derived from class 1 by combining elements with - on either s
 class 5 is weird and different and shall be ignored
 
 class 2 and 3 are isomorphic by reflection
-class 1 and 4 are isomorphic by conjucation by -
+class 1 and 4 are isomorphic by conjugation by -
 -}
