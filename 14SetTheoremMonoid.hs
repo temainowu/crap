@@ -52,9 +52,18 @@ instance Monoid M where
     mempty = M []
 
 instance Ord M where
+    -- case by case implementation of transitivity of <=
+    M [I,K,I,K,I,K,I] <= M [K] = True
+    M [I,K,I,K,I,K,I] <= M [K,I,K,I,K] = True
+    M [I,K,I] <= M [K] = True
+    M [I,K,I] <= M [K,I,K,I,K] = True
+    M [I,K] <= M [K,I] = True
+    M [I,K] <= M [K,I,K,I,K,I] = True
+    M [I,K,I,K,I,K] <= M [K,I] = True
+    M [I,K,I,K,I,K] <= M [K,I,K,I,K,I] = True
     x <= y | not (reduced x && reduced y) = reduceM x <= reduceM y
            | x == y = True
-           | countI x `mod` 2 /= countI y `mod` 2 = False
+           | countI x `mod` 2 /= countI y `mod` 2 = error "incomparable"
             where
                 countI :: M -> Int
                 countI (M []) = 0
@@ -65,20 +74,9 @@ instance Ord M where
     M xs <= M ys | not (null xs || null ys) && last xs == last ys = M (init xs) <= M (init ys)
     M (I:K:I:xs) <= y | M xs == y = True
     x <= M (K:ys) | x == M ys = True
-    x <= y = False
+    x <= y = error "incomparable"
 
-{-
-M is only partially ordered
-two elements are incomparable if the parity of the number of Is in them is different
-
-(a,b<c means a<c and b<c but none of a<b, b<a, or a=b hold)
-iki, ikikiki < ikik,  ε, kiki < k,  kikik
-ik,  ikikik  < ikiki, i, kik  < ki, kikiki
-
-kikik is actually incomparable with ε (but is still greater than ikik and kiki)
- so a diagram like this cannot work
- the function says that kikik <= ε but I don't think that's true
--}
+-- M is only partially ordered :(
 
 consM :: A -> M -> M
 consM x (M xs) = M (x:xs)
