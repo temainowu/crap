@@ -53,14 +53,21 @@ instance Monoid M where
 
 instance Ord M where
     x <= y | not (reduced x && reduced y) = reduceM x <= reduceM y
-    M [] <= M [] = True
-    M (K:xs) <= M (K:ys) = M xs <= M ys -- 1
-    M (I:xs) <= M (I:ys) = M ys <= M xs -- 2
-    M (I:K:I:xs) <= y = M xs <= y       -- 3
-    x <= M (K:ys) = x <= M ys           -- 4
+           | x == y = True
+    M (K:xs) <= M (K:ys) = M xs <= M ys
+    M (I:xs) <= M (I:ys) = M ys <= M xs
+    M xs <= M ys | not (null xs || null ys) && last xs == last ys = M (init xs) <= M (init ys)
+    M (I:K:I:xs) <= y = M xs <= y -- neither of these rules are reversible
+    x <= M (K:ys) = x <= M ys     -- x <= ky if x <= y but if x <= ky then x might be > y
 
--- M is only partially ordered
--- two elements are incomparable if the parity of the number of Is in them is different
+{-
+M is only partially ordered
+two elements are incomparable if the parity of the number of Is in them is different
+the following is, to my knowledge, as much ordering as can be done:
+(a,b<c means a<c and b<c but none of a<b, b<a, or a=b hold)
+iki, ikikiki < ikik,  ε, kiki < k,  kikik
+ik,  ikikik  < ikiki, i, kik  < ki, kikiki
+-}
 
 consM :: A -> M -> M
 consM x (M xs) = M (x:xs)
@@ -85,6 +92,7 @@ reduced (M xs) = xs == unwrap (simplifyM (M xs))
 unwrap :: M -> [A]
 unwrap (M xs) = xs
 
+m :: [M]
 m = [M [], M [K], M [I,K], M [K,I,K], M [I,K,I,K], M [K,I,K,I,K], M [I,K,I,K,I,K], M [I], M [K,I], M [I,K,I], M [K,I,K,I], M [I,K,I,K,I], M [K,I,K,I,K,I], M [I,K,I,K,I,K,I]]
 
 powerset :: [a] -> [[a]]
