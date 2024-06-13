@@ -222,13 +222,13 @@ meet x y = meet y x
 test :: ((M, M) -> Bool) -> Bool
 test f = and [f (x,y)| (x,y) <- allPairs m]
 test1 = test (\(x,y) -> join x (meet x y) == x)
-test4 = test (\(x,y) -> meet x (join x y) == x)
-test2 = test (\(x,y) -> meet x y == meet y x)
-test3 = test (\(x,y) -> join x y == join y x)
+test2 = test (\(x,y) -> meet x (join x y) == x)
+test3 = test (\(x,y) -> meet x y == meet y x)
+test4 = test (\(x,y) -> join x y == join y x)
 test5 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && join a x <= join b y) || not (a <= b) || not (x <= y)))
 test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && meet a x <= meet b y) || not (a <= b) || not (x <= y)))
 
-allTests = and [test1, test2, test3, test4, test5, test6]
+allTests = [test1, test2, test3, test4, test5, test6]
 
 {-
 
