@@ -200,7 +200,7 @@ f :: [[M]] -> [[M]]
 f = filter generates . map generate
 
 untilIdempotent :: Eq a => (a -> a) -> a -> a
-untilIdempotent f x | x == f x = x 
+untilIdempotent f x | x == f x = x
 untilIdempotent f x = f (f x)
 
 generates :: [M] -> Bool
@@ -215,7 +215,7 @@ join x y | x <= y = y
          | (length . unwrap . reduceM) x < (length . unwrap . reduceM) y = y
 join (M [K,I,K,I]) (M [I,K,I,K]) = M [K,I,K,I]
 join x y = join y x
-            
+
 meet :: M -> M -> M
 meet x y | join x y == x = y
 meet x y = meet y x
@@ -226,8 +226,8 @@ test1 = test (\(x,y) -> join x (meet x y) == x)
 test2 = test (\(x,y) -> meet x (join x y) == x)
 test3 = test (\(x,y) -> meet x y == meet y x)
 test4 = test (\(x,y) -> join x y == join y x)
-test5 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && join a x <= join b y) || not (a <= b) || not (x <= y)))
-test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && meet a x <= meet b y) || not (a <= b) || not (x <= y)))
+test5 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y) <= (join a x <= join b y)))
+test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y) <= (meet a x <= meet b y)))
 
 allTests = [test1, test2, test3, test4, test5, test6]
 
@@ -251,4 +251,26 @@ i join y = y
 
 x == 0 <==> y == i
 x == i <==> y == 0
+-}
+
+c :: (a -> b) -> (c -> d -> a) -> c -> d -> b
+c x y = curry (x . uncurry y)
+{-
+(1,1) (1,0) (0,1) (0,0)
+0000          (\x y -> False)
+0001          (c not (||))
+0010 (<)
+0011          (not . curry fst)
+0100 (>)
+0101          (not . curry snd)
+0110 (/=)
+0111          (c not &&)
+1000 (&&)
+1001 (==)
+1010          (curry snd)
+1011 (<=)
+1100          (curry fst)
+1101 (>=)
+1110 (||)
+1111          (\x y -> True)
 -}
