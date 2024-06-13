@@ -232,8 +232,6 @@ test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && meet a x <= meet b 
 allTests = [test1, test2, test3, test4, test5, test6]
 
 {-
-
-
 0 join (0 meet i) = 0
 i join (i meet 0) = i
 0 meet (0 join i) = 0
@@ -250,4 +248,7 @@ i meet x = x
 i meet y = 0
 0 join y = y
 i join y = y
+
+x == 0 <==> y == i
+x == i <==> y == 0
 -}
