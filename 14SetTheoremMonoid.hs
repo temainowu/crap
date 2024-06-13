@@ -52,7 +52,8 @@ instance Monoid M where
     mempty = M []
 
 instance Ord M where
-    -- case by case implementation of transitivity of <=
+    x > y = y < x
+    x >= y = y <= x
     M [I,K,I,K,I,K,I] <= M [K] = True
     M [I,K,I,K,I,K,I] <= M [K,I,K,I,K] = True
     M [I,K,I] <= M [K] = True
@@ -63,20 +64,23 @@ instance Ord M where
     M [I,K,I,K,I,K] <= M [K,I,K,I,K,I] = True
     x <= y | not (reduced x && reduced y) = reduceM x <= reduceM y
            | x == y = True
-           | countI x `mod` 2 /= countI y `mod` 2 = error "incomparable"
-            where
-                countI :: M -> Int
-                countI (M []) = 0
-                countI (M (I:xs)) = 1 + countI (M xs)
-                countI (M (_:xs)) = countI (M xs)
+           | parity x /= parity y = False
     M (K:xs) <= M (K:ys) = M xs <= M ys
     M (I:xs) <= M (I:ys) = M ys <= M xs
     M xs <= M ys | not (null xs || null ys) && last xs == last ys = M (init xs) <= M (init ys)
     M (I:K:I:xs) <= y | M xs == y = True
     x <= M (K:ys) | x == M ys = True
-    x <= y = error "incomparable"
+    x <= y = False
 
 -- M is only partially ordered :(
+
+parity :: M -> Bool
+parity (M []) = True
+parity (M (K:xs)) = (parity . M) xs
+parity (M (I:xs)) = (not . parity . M) xs
+
+comparable :: M -> M -> Bool
+comparable x y = x <= y || y <= x
 
 consM :: A -> M -> M
 consM x (M xs) = M (x:xs)
@@ -107,6 +111,9 @@ m = [M [], M [K], M [I,K], M [K,I,K], M [I,K,I,K], M [K,I,K,I,K], M [I,K,I,K,I,K
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
 powerset (x:xs) = powerset xs ++ map (x:) (powerset xs)
+
+allPairs :: [a] -> [(a,a)]
+allPairs xs = [(x,y) | x <- xs, y <- xs]
 
 isMonoid :: [M] -> Bool
 isMonoid xs = mempty `elem` xs && and [x <> y `elem` xs {- && (x <> y) <> z == x <> (y <> z) -} | x <- xs, y <- xs, z <- xs]
@@ -168,4 +175,78 @@ class 5 is weird and different and shall be ignored
 
 class 2 and 3 are isomorphic by reflection
 class 1 and 4 are isomorphic by conjugation by -
+-}
+
+newtype Leq = L (M,M)
+    deriving Eq
+
+instance Show Leq where
+    show (L (x,y)) = '\n' : (tail . init . init . show) (S [[x]]) ++ " ≤ " ++ (tail . init . init . show) (S [[y]])
+
+order :: [Leq]
+order = [ L (x,y) | x <- m, y <- m, x <= y, x /= y]
+
+order' :: [Leq]
+order' = [ L (x,y) | x <- m, y <- m, x < y]
+
+generate :: [M] -> [M]
+generate xs = nub [x <> y | x <- xs, y <- xs]
+
+set :: [[M]]
+set = filter generates (filter (M [] `elem`) (powerset m))
+
+f :: [[M]] -> [[M]]
+f = filter generates . map generate
+
+untilIdempotent :: Eq a => (a -> a) -> a -> a
+untilIdempotent f x | x == f x = x 
+untilIdempotent f x = f (f x)
+
+generates :: [M] -> Bool
+generates xs = generate xs /= xs || length xs == 14
+
+a = length (untilIdempotent f set)
+
+join :: M -> M -> M
+join x y | x <= y = y
+         | y <= x = x
+         | not (parity x) && parity y = x
+         | (length . unwrap . reduceM) x < (length . unwrap . reduceM) y = y
+join (M [K,I,K,I]) (M [I,K,I,K]) = M [K,I,K,I]
+join x y = join y x
+            
+meet :: M -> M -> M
+meet x y | join x y == x = y
+meet x y = meet y x
+
+test :: ((M, M) -> Bool) -> Bool
+test f = and [f (x,y)| (x,y) <- allPairs m]
+test1 = test (\(x,y) -> join x (meet x y) == x)
+test4 = test (\(x,y) -> meet x (join x y) == x)
+test2 = test (\(x,y) -> meet x y == meet y x)
+test3 = test (\(x,y) -> join x y == join y x)
+test5 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && join a x <= join b y) || not (a <= b) || not (x <= y)))
+test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y && meet a x <= meet b y) || not (a <= b) || not (x <= y)))
+
+allTests = and [test1, test2, test3, test4, test5, test6]
+
+{-
+
+
+0 join (0 meet i) = 0
+i join (i meet 0) = i
+0 meet (0 join i) = 0
+i meet (i join 0) = i
+
+x = 0 meet i
+y = 0 join i
+
+0 join x = 0
+i join x = i
+0 meet x = x 
+i meet x = x
+0 meet y = 0
+i meet y = 0
+0 join y = y
+i join y = y
 -}
