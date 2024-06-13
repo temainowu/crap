@@ -1,4 +1,5 @@
 import Prelude hiding ((*))
+import Data.List (nub)
 
 data A = K | I
     deriving (Show, Eq)
