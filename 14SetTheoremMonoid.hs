@@ -1,6 +1,92 @@
 import Prelude hiding ((*))
 import Data.List (nub)
 
+class Finite a where
+    enumerate :: [a]
+
+instance Finite M where
+    enumerate = [M [], M [K], M [I,K], M [K,I,K], M [I,K,I,K], M [K,I,K,I,K], M [I,K,I,K,I,K], M [I], M [K,I], M [I,K,I], M [K,I,K,I], M [I,K,I,K,I], M [K,I,K,I,K,I], M [I,K,I,K,I,K,I]]
+
+{-
+class (Ord a, Finite a, Extended a) => Lattice a where
+    join, meet :: a -> a -> a
+    join x y | x <= y = y
+             | y <= x = x
+             | length (nub [ s | s <- enumerate, n <- enumerate, not (n < s), x <= s, y <= s]) == 1 = head [ s | s <- enumerate, n <- enumerate, not (n < s), x <= s, y <= s]
+             | otherwise = top
+
+    meet x y | x <= y = x
+             | y <= x = y
+             | length (nub [ m | m <- enumerate, n <- enumerate, not (m < n), m <= x, m <= y]) == 1 = head [ m | m <- enumerate, n <- enumerate, not (m < n), m <= x, m <= y]
+             | otherwise = bottom
+
+class (Finite a, Ord a) => Extended a where
+    top :: a
+    bottom :: a
+
+newtype Ext a = E (Either a Bool)
+    deriving Eq
+
+instance Show a => Show (Ext a) where
+    show (E (Left x)) = '<' : show x ++ ">"
+    show (E (Right True)) = "T"
+    show (E (Right False)) = "_"
+
+instance Ord a => Ord (Ext a) where
+    E (Left x) <= E (Left y) = x <= y
+    E (Right x) <= E (Right y) = x <= y
+    E (Left x) <= E (Right y) = y
+    E (Right x) <= E (Left y) = not x
+
+instance Finite a => Finite (Ext a) where
+    enumerate = E (Right False) : E (Right True) : [E (Left x) | x <- enumerate]
+
+instance (Finite a, Ord a) => Extended (Ext a) where
+    top = E (Right True)
+    bottom = E (Right False)
+
+instance Lattice (Ext M)
+
+extend :: a -> Ext a
+extend = E . Left
+
+unExtend :: Ext a -> a
+unExtend (E (Left x)) = x
+
+acton :: Lattice a => M -> [a] -> [a]
+acton (M []) x = x
+acton (M [I]) x = [n | n <- enumerate, n `notElem` x]
+acton (M [K]) x = nub ([join a b | a <- x, b <- x] ++ [meet a b | a <- x, b <- x] ++ x)
+acton (M (m:ms)) x = acton (M [m]) (acton (M ms) x)
+
+instance Finite ExtendedM where
+    enumerate = nub ([Un (x,y) | x <- enumerate, y <- enumerate] ++ [In (x,y) | x <- enumerate, y <- enumerate])
+
+instance Extended ExtendedM where
+    top = Un (M [],M [I])
+    bottom = In (M [],M [])
+
+instance Lattice ExtendedM
+
+data ExtendedM = Un (M,M) | In (M,M)
+
+instance Eq ExtendedM where
+    Un (x,y) == Un (a,b) | x == M [I] <> y && a == M [I] <> b = True
+    In (x,y) == In (a,b) | x == M [I] <> y && a == M [I] <> b = True
+    Un (x,y) == Un (a,b) = x == a && y == b || x == b && y == a
+    In (x,y) == In (a,b) = x == a && y == b || x == b && y == a
+    Un (x,y) == In (a,b) = x == y && y == a && a == b || x == M [] && y == a && a == b || y == M [] && x == a && a == b
+    In (x,y) == Un (a,b) = x == y && y == a && a == b || a == M [] && b == x && x == y || b == M [] && a == x && x == y
+
+instance Ord ExtendedM where
+    In (x,y) <= _ | x == M [] || y == M [] || x == M [I] <> y = True
+    _ <= Un (a,b) | a == M [I] <> b = True
+    Un (x,y) <= Un (a,b) = x <= a && y <= b || x <= b && y <= a
+    In (x,y) <= In (a,b) = x <= a && y <= b || x <= b && y <= a
+    In (x,y) <= Un (a,b) = x <= a && y <= b || x <= b && y <= a
+    Un (x,y) <= In (a,b) = x <= a && y <= b && x <= b && y <= a
+-}
+
 data A = K | I
     deriving (Show, Eq)
 
@@ -45,7 +131,6 @@ ki      (weird)
 - the idempotent elements form a submonoid (it hurts me that it's not totally ordered)
 - the only subsets of M that form groups are {ε} and {ε,i}
 -}
-
 instance Semigroup M where
     M xs <> M ys = reduceM (M (xs ++ ys))
 
@@ -55,6 +140,8 @@ instance Monoid M where
 instance Ord M where
     x > y = y < x
     x >= y = y <= x
+    M [K,I,K,I,K] <= M [K] = True
+    M [K,I,K,I,K,I] <= M [K,I] = True
     M [I,K,I,K,I,K,I] <= M [K] = True
     M [I,K,I,K,I,K,I] <= M [K,I,K,I,K] = True
     M [I,K,I] <= M [K] = True
@@ -106,9 +193,6 @@ reduced (M xs) = xs == unwrap (simplifyM (M xs))
 unwrap :: M -> [A]
 unwrap (M xs) = xs
 
-m :: [M]
-m = [M [], M [K], M [I,K], M [K,I,K], M [I,K,I,K], M [K,I,K,I,K], M [I,K,I,K,I,K], M [I], M [K,I], M [I,K,I], M [K,I,K,I], M [I,K,I,K,I], M [K,I,K,I,K,I], M [I,K,I,K,I,K,I]]
-
 powerset :: [a] -> [[a]]
 powerset [] = [[]]
 powerset (x:xs) = powerset xs ++ map (x:) (powerset xs)
@@ -120,7 +204,7 @@ isMonoid :: [M] -> Bool
 isMonoid xs = mempty `elem` xs && and [x <> y `elem` xs {- && (x <> y) <> z == x <> (y <> z) -} | x <- xs, y <- xs, z <- xs]
 
 submonoids' :: [[M]]
-submonoids' = filter isMonoid (powerset m)
+submonoids' = filter isMonoid (powerset enumerate)
 
 submonoids :: [[M]]
 submonoids = map (map M) [[[]],[[],[I,K,I,K,I,K,I]],[[],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K,I]],[[],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K,I],[K,I,K,I,K,I]],[[],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I]],[[],[I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I],[K,I,K,I],[K,I,K,I,K,I]],[[],[K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I]],[[],[K,I,K,I,K]],[[],[K,I,K,I,K],[K,I,K,I]],[[],[I,K,I,K]],[[],[I,K,I,K],[I,K,I,K,I,K,I]],[[],[I,K,I,K],[I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I,K],[I,K,I,K,I,K]],[[],[I,K,I,K],[I,K,I,K,I,K],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I,K],[I,K,I,K,I,K],[I,K,I],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I,K],[K,I,K,I,K]],[[],[I,K,I,K],[K,I,K,I,K],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K,I,K],[K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K],[K,I,K,I,K]],[[],[K,I,K],[K,I,K,I,K],[K,I,K,I],[K,I,K,I,K,I]],[[],[K,I,K],[K,I,K,I,K],[K,I],[K,I,K,I],[K,I,K,I,K,I]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K],[I,K,I,K],[I,K,I,K,I,K]],[[],[I,K],[I,K,I,K],[I,K,I,K,I,K],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K],[I,K,I,K],[I,K,I,K,I,K],[I,K,I],[I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K]],[[],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K]],[[],[K],[K,I,K,I,K]],[[],[K],[K,I,K,I,K],[K,I,K,I]],[[],[K],[I,K,I,K],[K,I,K,I,K]],[[],[K],[I,K,I,K],[K,I,K,I,K],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[I,K,I,K],[K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[K,I,K],[K,I,K,I,K]],[[],[K],[K,I,K],[K,I,K,I,K],[K,I,K,I],[K,I,K,I,K,I]],[[],[K],[K,I,K],[K,I,K,I,K],[K,I],[K,I,K,I],[K,I,K,I,K,I]],[[],[K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K]],[[],[K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K]],[[],[K],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[K,I],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]],[[],[K],[I,K],[K,I,K],[I,K,I,K],[K,I,K,I,K],[I,K,I,K,I,K],[I],[K,I],[I,K,I],[K,I,K,I],[I,K,I,K,I],[K,I,K,I,K,I],[I,K,I,K,I,K,I]]]
@@ -185,16 +269,16 @@ instance Show Leq where
     show (L (x,y)) = '\n' : (tail . init . init . show) (S [[x]]) ++ " ≤ " ++ (tail . init . init . show) (S [[y]])
 
 order :: [Leq]
-order = [ L (x,y) | x <- m, y <- m, x <= y, x /= y]
+order = [ L (x,y) | x <- enumerate, y <- enumerate, x <= y, x /= y]
 
 order' :: [Leq]
-order' = [ L (x,y) | x <- m, y <- m, x < y]
+order' = [ L (x,y) | x <- enumerate, y <- enumerate, x < y]
 
 generate :: [M] -> [M]
 generate xs = nub [x <> y | x <- xs, y <- xs]
 
 set :: [[M]]
-set = filter generates (filter (M [] `elem`) (powerset m))
+set = filter generates (filter (M [] `elem`) (powerset enumerate))
 
 f :: [[M]] -> [[M]]
 f = filter generates . map generate
@@ -207,29 +291,6 @@ generates :: [M] -> Bool
 generates xs = generate xs /= xs || length xs == 14
 
 a = length (untilIdempotent f set)
-
-join :: M -> M -> M
-join x y | x <= y = y
-         | y <= x = x
-         | not (parity x) && parity y = x
-         | (length . unwrap . reduceM) x < (length . unwrap . reduceM) y = y
-join (M [K,I,K,I]) (M [I,K,I,K]) = M [K,I,K,I]
-join x y = join y x
-
-meet :: M -> M -> M
-meet x y | join x y == x = y
-meet x y = meet y x
-
-test :: ((M, M) -> Bool) -> Bool
-test f = and [f (x,y)| (x,y) <- allPairs m]
-test1 = test (\(x,y) -> join x (meet x y) == x)
-test2 = test (\(x,y) -> meet x (join x y) == x)
-test3 = test (\(x,y) -> meet x y == meet y x)
-test4 = test (\(x,y) -> join x y == join y x)
-test5 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y) <= (join a x <= join b y)))
-test6 = test (\(x,y) -> test (\(a,b) -> (a <= b && x <= y) <= (meet a x <= meet b y)))
-
-allTests = [test1, test2, test3, test4, test5, test6]
 
 {-
 0 join (0 meet i) = 0
@@ -274,3 +335,36 @@ c x y = curry (x . uncurry y)
 1110 (||)
 1111          (\x y -> True)
 -}
+
+join :: M -> M -> M
+join x y | x <= y = y
+         | y <= x = x
+         | x == M [] = M [K]
+         | y == M [] = M [K]
+         | x == M [I] = M [K,I]
+         | y == M [I] = M [K,I]
+         | parity x && parity y = M [K,I,K,I,K]
+         | not (parity x || parity y) = M [K,I,K,I,K,I]
+join x y = join y x
+
+meet :: M -> M -> M
+meet x y | x <= y = x
+         | y <= x = y
+         | x == M [] = M [I,K,I]
+         | y == M [] = M [I,K,I]
+         | x == M [I] = M [I,K]
+         | y == M [I] = M [I,K]
+         | parity x && parity y = M [I,K,I,K,I,K,I]
+         | not (parity x || parity y) = M [I,K,I,K,I,K]
+meet x y = meet y x
+
+test :: ((M, M) -> Bool) -> Bool
+test f = and [f (x,y)| (x,y) <- allPairs enumerate, parity x == parity y]
+test1 = test (\(x,y) -> join x (meet x y) == x)
+test2 = test (\(x,y) -> meet x (join x y) == x)
+test3 = test (\(x,y) -> meet x y == meet y x)
+test4 = test (\(x,y) -> join x y == join y x)
+test5 = test (\(x,y) -> test (\(a,b) -> parity a /= parity x || (a <= b && x <= y) <= (join a x <= join b y)))
+test6 = test (\(x,y) -> test (\(a,b) -> parity a /= parity x || (a <= b && x <= y) <= (meet a x <= meet b y)))
+
+allTests = [test1, test2, test3, test4, test5, test6]
