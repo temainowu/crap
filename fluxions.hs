@@ -5,7 +5,6 @@ import Data.Maybe ( fromJust )
 newtype Fluxion n = F ([n], Int)
 -- F ([a₀,a₁,...,aₖ],n) represents the fluxion (a₀ε⁰+a₁ε¹+...+aₖεᵏ)ωⁿ
 -- this is able to represent all possible finitely long fluxions
--- see fluxions.txt (or https://ymirstuff.neocities.org/math) for more information on fluxions
 
 data RationalFluxion n = (Fluxion n) :/ (Fluxion n)
 
@@ -25,7 +24,7 @@ instance (Show n, Ord n, Num n) => Show (Fluxion n) where
                         . replace (pack "  ") (pack " 1 ")
                         . replace (pack " 1") (pack " ")
                         . replace (pack "^1") (pack "")
-                        . replace (pack "ε^-") (pack "∞^") -- it's not letting me print ω
+                        . replace (pack "ε^-") (pack "∞^") -- it's not letting me print ω :(
                         . replace (pack "ε^0") (pack "")
                         . pack)
                         $ concatMap (\(x,i) ->
