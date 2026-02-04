@@ -4,7 +4,6 @@ import Data.Maybe ( fromJust )
 
 newtype Fluxion n = F ([n], Int)
 -- F ([a₀,a₁,...,aₖ],n) represents the fluxion (a₀ε⁰+a₁ε¹+...+aₖεᵏ)ωⁿ
--- this is able to represent all possible finitely long fluxions
 
 data RationalFluxion n = (Fluxion n) :/ (Fluxion n)
 
