@@ -229,3 +229,15 @@ divide (F (xs,n) :/ F ([x],0)) = Just (F (map (/ x) xs,n))
 divide (F (xs,n) :/ F (ys,0)) | last ys /= 0 = Nothing
                               | otherwise = divide (F (xs,n) :/ F (init ys,0))
 divide (F (xs,n) :/ F (ys,m)) = divide (F (xs,n-m) :/ F (ys,0))
+
+-- Adapted code from error-code-864g:
+
+rootNewton :: (Fractional n, Ord n) => n -> (Fluxion n -> Fluxion n) -> n -> Int -> Maybe n
+rootNewton x f tolerance 0 = Just 0
+rootNewton x f tolerance n = case diff f x of
+    Just z -> if abs (-(lim (f x')/z)) < tolerance then Just (x - (lim (f x')/z)) else rootNewton (x - lim (f x')/z) f tolerance (n-1)
+    Nothing -> Nothing
+    where x' = F ([x],0)
+
+root :: (Fractional a, Ord a) => Maybe a
+root = rootNewton 1 (\x -> x^2-x-1) (1/10^20) 1000
